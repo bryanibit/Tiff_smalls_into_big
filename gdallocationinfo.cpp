@@ -9,6 +9,10 @@
 #include "UTM.h"
 #include <iomanip>
 #include "opencv2/opencv.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/core/core.hpp"
+#include <tuple>
+
 using namespace std;
 using namespace cv;
 
@@ -46,10 +50,11 @@ vector<PointUTM> acquireRoadPoint(string file_name){
         std::cout << std::setprecision(12) << UTMEasting << ", " << std::setprecision(12) << UTMNorthing << std::endl;
         res.emplace_back(UTMEasting, UTMNorthing);
     }
+    inmemory.close();
     return res;
 }
 
-PointUTM getTiffTopLeft(const char* pszFilename){
+std::vector<PointUTM> getTiffTopLeft(const char* pszFilename){
     GDALDataset  *poDataset;
     GDALAllRegister();
     poDataset = (GDALDataset *) GDALOpen( pszFilename, GA_ReadOnly );
@@ -74,16 +79,27 @@ PointUTM getTiffTopLeft(const char* pszFilename){
                     adfGeoTransform[1], adfGeoTransform[5] );
         }
     }
-    return PointUTM{adfGeoTransform[0], adfGeoTransform[3]};
+    return std::vector<PointUTM>{PointUTM{adfGeoTransform[0], adfGeoTransform[3]}, PointUTM{adfGeoTransform[1], adfGeoTransform[5]}};
 }
 
 int main()
 {
     auto file_point = acquireRoadPoint("/home/ugv-yu/bryan/test/geotiff/alashan.txt");
     auto topLeftPoint = getTiffTopLeft("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif");
-//    cv::Mat displayImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif", 1);
-//    for(const auto &[east, north]: file_point){
-//
-//    }
+    cv::Mat displayImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif", 1);
+    cout << "img size: (" << displayImg.size().width << ", " << displayImg.size().height << ")" << std::endl;
+
+//    vector<cv::Point2d> pixelPoints;
+    for(const auto pointxy: file_point){
+        std::cout << "x-> " << (pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x << std::endl;
+        std::cout << "y-> " << (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y << std::endl;
+        std::cout << "\n";
+//        pixelPoints.emplace_back((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
+//                                 (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y);
+        cv::circle(displayImg, cv::Point((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
+                                         (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y), 3, cv::Scalar(0,25,255), -1);
+    }
+    cv::imshow("img", displayImg);
+    cv::waitKey(0);
     return 0;
 }
