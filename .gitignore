@@ -1,0 +1,8 @@
+.idea
+.vscode
+build
+*.tif
+*.tiff
+ofxGeo
+cmake-build-debug
+*.txt
