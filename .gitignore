@@ -1,10 +1,10 @@
 *.ini
-*.png
 .idea
 .vscode
 build
 *.tif
 *.tiff
+*.png
 ofxGeo
 cmake-build-debug
 *.txt

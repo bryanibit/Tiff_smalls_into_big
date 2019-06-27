@@ -86,8 +86,8 @@ int main()
 {
     auto file_point = acquireRoadPoint("/home/ugv-yu/bryan/test/geotiff/alashan.txt");
     auto topLeftPoint = getTiffTopLeft("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif");
-    cv::Mat displayImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif", 1);
-    cout << "img size: (" << displayImg.size().width << ", " << displayImg.size().height << ")" << std::endl;
+    cv::Mat smallImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif", 1);
+    cout << "img size: (" << smallImg.size().width << ", " << smallImg.size().height << ")" << std::endl;
 
 //    vector<cv::Point2d> pixelPoints;
     for(const auto pointxy: file_point){
@@ -96,10 +96,28 @@ int main()
         std::cout << "\n";
 //        pixelPoints.emplace_back((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
 //                                 (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y);
-        cv::circle(displayImg, cv::Point((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
+        cv::circle(smallImg, cv::Point((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
                                          (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y), 3, cv::Scalar(0,25,255), -1);
     }
-    cv::imshow("img", displayImg);
-    cv::waitKey(0);
-    return 0;
+
+//    cv::imshow("img", smallImg);
+//    cv::waitKey(0);
+//    return 0;
+
+    // combine two image to one
+    cv::Mat bigImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/alashan-north-map-50.png");
+
+    // smallImg: x, y range -> bigImg pixel range
+    double bigResolution = 0.597164283;
+    int width_in_bigImg = static_cast<int>(smallImg.size().width * topLeftPoint.at(1).x / bigResolution);
+    int height_in_bigImg = static_cast<int>(smallImg.size().height*(0-topLeftPoint.at(1).y) / bigResolution);
+
+    // smallImg resize to above range then mask
+    cv::Mat smallImg_in_bigImg;
+    cv::resize(smallImg,smallImg_in_bigImg, cv::Size(width_in_bigImg, height_in_bigImg), 0 ,0);
+//    cv::imshow("img", smallImg_in_bigImg);
+//    cv::waitKey(0);
+    auto topRightBig = PointUTM(11754466.9511462640, 4723788.790894158);
+    auto pixel_x = (topLeftPoint.at(0).x- topRightBig.x) / bigResolution
+            (topRightBig.y + bigImg.size().height * bigResolution)
 }
