@@ -118,6 +118,7 @@ int main()
 //    cv::imshow("img", smallImg_in_bigImg);
 //    cv::waitKey(0);
     auto topRightBig = PointUTM(11754466.9511462640, 4723788.790894158);
-    auto pixel_x = (topLeftPoint.at(0).x- topRightBig.x) / bigResolution
-            (topRightBig.y + bigImg.size().height * bigResolution)
+    auto pixel_x = (topLeftPoint.at(0).x- topRightBig.x) / bigResolution;
+    auto pixel_y = ((topRightBig.y + bigImg.size().height * bigResolution)- topLeftPoint.at(0).y) / bigResolution;
+    std::cout << pixel_x << ", " << pixel_y << std::endl;
 }
