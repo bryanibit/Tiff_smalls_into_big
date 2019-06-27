@@ -1,3 +1,5 @@
+*.ini
+*.png
 .idea
 .vscode
 build
