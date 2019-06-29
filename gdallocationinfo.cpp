@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include "UTM.h"
+#include "transform.h"
 #include <iomanip>
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -84,41 +85,33 @@ std::vector<PointUTM> getTiffTopLeft(const char* pszFilename){
 
 int main()
 {
-    auto file_point = acquireRoadPoint("/home/ugv-yu/bryan/test/geotiff/alashan.txt");
-    auto topLeftPoint = getTiffTopLeft("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif");
-    cv::Mat smallImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif", 1);
+    const char *odm_img = "/home/ugv-yu/bryan/test/geotiff/odm_orthophoto.tif";
+    auto topLeftPoint_odm = getTiffTopLeft(odm_img);
+    cv::Mat smallImg = cv::imread(odm_img, 1);
     cout << "img size: (" << smallImg.size().width << ", " << smallImg.size().height << ")" << std::endl;
 
-//    vector<cv::Point2d> pixelPoints;
-    for(const auto pointxy: file_point){
-        std::cout << "x-> " << (pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x << std::endl;
-        std::cout << "y-> " << (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y << std::endl;
-        std::cout << "\n";
-//        pixelPoints.emplace_back((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
-//                                 (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y);
-        cv::circle(smallImg, cv::Point((pointxy.x - topLeftPoint.at(0).x) / topLeftPoint.at(1).x,
-                                         (pointxy.y - topLeftPoint.at(0).y) / topLeftPoint.at(1).y), 3, cv::Scalar(0,25,255), -1);
-    }
-
-//    cv::imshow("img", smallImg);
-//    cv::waitKey(0);
-//    return 0;
-
     // combine two image to one
-    cv::Mat bigImg = cv::imread("/home/ugv-yu/bryan/test/geotiff/alashan-north-map-50.png");
+    const char *ground_img = "/home/ugv-yu/bryan/test/geotiff/alashanNorth.tif";
+    auto topLeftPoint_ground = getTiffTopLeft(ground_img);
+    auto groudImg = cv::imread(ground_img, 1);
 
     // smallImg: x, y range -> bigImg pixel range
-    double bigResolution = 0.597164283;
-    int width_in_bigImg = static_cast<int>(smallImg.size().width * topLeftPoint.at(1).x / bigResolution);
-    int height_in_bigImg = static_cast<int>(smallImg.size().height*(0-topLeftPoint.at(1).y) / bigResolution);
-
+    double bigResolution = topLeftPoint_ground.at(1).x;
+    int width_in_bigImg = static_cast<int>(smallImg.size().width * topLeftPoint_odm.at(1).x / topLeftPoint_ground.at(1).x);
+    int height_in_bigImg = static_cast<int>(smallImg.size().height * topLeftPoint_odm.at(1).y / topLeftPoint_ground.at(1).y);
+    cout << "small img within big in pixel: " << width_in_bigImg << ", " << height_in_bigImg << std::endl;
     // smallImg resize to above range then mask
     cv::Mat smallImg_in_bigImg;
     cv::resize(smallImg,smallImg_in_bigImg, cv::Size(width_in_bigImg, height_in_bigImg), 0 ,0);
-//    cv::imshow("img", smallImg_in_bigImg);
-//    cv::waitKey(0);
-    auto topRightBig = PointUTM(11754466.9511462640, 4723788.790894158);
-    auto pixel_x = (topLeftPoint.at(0).x- topRightBig.x) / bigResolution;
-    auto pixel_y = ((topRightBig.y + bigImg.size().height * bigResolution)- topLeftPoint.at(0).y) / bigResolution;
+    cv::imshow("img", smallImg_in_bigImg);
+    cv::waitKey(0);
+
+//    auto topRightBig = PointUTM(11754466.9511462640, 4723788.790894158);
+//    auto pixel_x = (topLeftPoint_odm.at(0).x- topRightBig.x) / bigResolution;
+//    auto pixel_y = ((topRightBig.y + groudImg.size().height * bigResolution)- topLeftPoint_odm.at(0).y) / bigResolution;
+    MapXYToLatLon(topLeftPoint_odm.at(0).x, topLeftPoint_odm.at(0).y,)
+    auto pixel_x = (topLeftPoint_odm.at(0).x - topLeftPoint_ground.at(0).x) / topLeftPoint_ground.at(1).x;
+    auto pixel_y = (topLeftPoint_odm.at(0).y - topLeftPoint_ground.at(0).y) / topLeftPoint_ground.at(1).y;
     std::cout << pixel_x << ", " << pixel_y << std::endl;
+    return 0;
 }
