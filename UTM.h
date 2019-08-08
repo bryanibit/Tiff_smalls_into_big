@@ -51,7 +51,7 @@
 
 #include <math.h>
 
-#define pi 3.14159265358979
+const double pi = 3.14159265358979;
 
 /* Ellipsoid model constants (actual values here are for WGS84) */
 #define sm_a 6378137.0
