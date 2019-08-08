@@ -1,0 +1,25 @@
+project(geotiff)
+cmake_minimum_required(VERSION 3.2)
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release64)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native -O3 -pthread")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "/opt/ros/kinetic/share/OpenCV-3.3.1-dev")
+
+#set(OpenCV_INCLUDE_DIRS "/opt/ros/kinetic/include/opencv-3.3.1-dev")
+#set(OpenCV_LIBRARIES "/opt/ros/kinetic/lib/x86_64-linux-gnu")
+#set(OpenCV_LIBS opencv_core opencv_imgproc opencv_highgui)
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+message("OPENINCLUDE " ${OpenCV_INCLUDE_DIRS} )
+
+find_package(Boost REQUIRED COMPONENTS thread system date_time filesystem)
+include_directories(${Boost_INCLUDE_DIRS})
+
+set(GDAL_INCLUDE_DIR "/usr/include/gdal")
+find_library(GDAL_LIBRARY gdal /usr/lib)
+include_directories(${GDAL_INCLUDE_DIR})
+#message(include_dir ${GDAL_INCLUDE_DIR})
+#message(lib_ ${GDAL_LIBRARY})
+
+add_executable(${PROJECT_NAME} gdallocationinfo.cpp UTM.cpp transform.cpp)
+target_link_libraries(${PROJECT_NAME} ${GDAL_LIBRARY} ${Boost_LIBRARIES} ${OpenCV_LIBS})

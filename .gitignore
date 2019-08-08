@@ -8,4 +8,3 @@ build
 *.png
 ofxGeo
 cmake-build-debug
-*.txt
